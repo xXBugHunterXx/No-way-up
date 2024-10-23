@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Me and Dylan's Game</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+
+</head>
+
+<body>
+    <div id="game-container">
+        <img id="player" src="my-phaser-game/assets/images/Knight1.png" alt="Player Image">
+    </div>
+
+    
+    <div id="menu">
+        <img src="my-phaser-game/assets/images/No.png" height = 300px width = 250px>
+        <img src="my-phaser-game/assets/images/Way.png" height = 300px width = 250px>
+        <img src="my-phaser-game/assets/images/Up.png" height = 300px width = 250px>
+        <div class="nav">
+        <button id="start-btn">Start Game</button>
+        <button id="instructions-btn">Instructions</button>
+        <button id="exit-btn">Exit</button>
+        </div>
+    </div>
+
+    <script>
+        const player = document.getElementById("player");
+        const menu = document.getElementById("menu");
+
+        let x = 0;
+        let y = 0;
+        const movementDistance = 5;
+
+        let keys = {};
+
+        const walkRight = [
+            'my-phaser-game/assets/images/KnightRight1.png',
+            'my-phaser-game/assets/images/KnightRight2.png',
+            'my-phaser-game/assets/images/KnightRight3.png',
+            'my-phaser-game/assets/images/KnightRight4.png',
+            'my-phaser-game/assets/images/KnightRight5.png',
+            'my-phaser-game/assets/images/KnightRight6.png',
+            'my-phaser-game/assets/images/KnightRight7.png',
+            'my-phaser-game/assets/images/KnightRight8.png'
+        ];
+
+        const walkLeft = [
+            'my-phaser-game/assets/images/KnightLeft1.png',
+            'my-phaser-game/assets/images/KnightLeft2.png',
+            'my-phaser-game/assets/images/KnightLeft3.png',
+            'my-phaser-game/assets/images/KnightLeft4.png',
+            'my-phaser-game/assets/images/KnightLeft5.png',
+            'my-phaser-game/assets/images/KnightLeft6.png',
+            'my-phaser-game/assets/images/KnightLeft7.png',
+            'my-phaser-game/assets/images/KnightLeft8.png'
+        ];
+
+        const walkDown = [
+            'my-phaser-game/assets/images/KnightDown1.png',
+            'my-phaser-game/assets/images/KnightDown2.png',
+            'my-phaser-game/assets/images/KnightDown3.png',
+            'my-phaser-game/assets/images/KnightDown4.png',
+            'my-phaser-game/assets/images/KnightDown5.png',
+            'my-phaser-game/assets/images/KnightDown6.png',
+            'my-phaser-game/assets/images/KnightDown7.png',
+            'my-phaser-game/assets/images/KnightDown8.png'
+        ];
+
+        const walkUp = [
+            'my-phaser-game/assets/images/KnightUp1.png',
+            'my-phaser-game/assets/images/KnightUp2.png',
+            'my-phaser-game/assets/images/KnightUp3.png',
+            'my-phaser-game/assets/images/KnightUp4.png',
+            'my-phaser-game/assets/images/KnightUp5.png',
+            'my-phaser-game/assets/images/KnightUp6.png',
+            'my-phaser-game/assets/images/KnightUp7.png',
+            'my-phaser-game/assets/images/KnightUp8.png'
+        ];
+
+        let currentDirection = walkDown;
+        let frameIndex = 0;
+        let animationCooldown = 0;
+
+        
+        function movePlayer() {
+            let isMoving = false;
+
+            if (keys['w']) {
+                y -= movementDistance;
+                currentDirection = walkUp;
+                isMoving = true;
+            }
+            if (keys['a']) {
+                x -= movementDistance;
+                currentDirection = walkLeft;
+                isMoving = true;
+            }
+            if (keys['s']) {
+                y += movementDistance;
+                currentDirection = walkDown;
+                isMoving = true;
+            }
+            if (keys['d']) {
+                x += movementDistance;
+                currentDirection = walkRight;
+                isMoving = true;
+            }
+
+            player.style.left = x + "px";
+            player.style.top = y + "px";
+
+            window.scrollTo(x - window.innerWidth / 2 + 25, y - window.innerHeight / 2 + 25);
+
+            if (isMoving) {
+                if (animationCooldown === 0) {
+                    frameIndex = (frameIndex + 1) % currentDirection.length;
+                    player.src = currentDirection[frameIndex];
+                    animationCooldown = 5; 
+                } else {
+                    animationCooldown--;
+                }
+            } else {
+                player.src = currentDirection[0];
+            }
+
+            requestAnimationFrame(movePlayer);
+        }
+
+      
+        window.onload = function() {
+            menu.style.display = 'block';
+        };
+
+        
+        document.getElementById("start-btn").onclick = function() {
+            menu.style.display = 'none'; 
+            requestAnimationFrame(movePlayer); 
+        };
+
+       
+        document.getElementById("instructions-btn").onclick = function() {
+            alert("Use W, A, S, D to move the player around.");
+        };
+
+      
+        document.getElementById("exit-btn").onclick = function() {
+            window.close(); 
+        };
+
+        
+        document.addEventListener("keydown", (event) => {
+            keys[event.key] = true;
+        });
+
+        document.addEventListener("keyup", (event) => {
+            keys[event.key] = false;
+        });
+    </script>
+</body>
+
+</html>
