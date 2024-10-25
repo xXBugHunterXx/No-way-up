@@ -6,34 +6,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Me and Dylan's Game</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
-
 </head>
 
 <body>
     <div id="game-container">
-        <img id="player" src="my-phaser-game/assets/images/Knight1.png" alt="Player Image">
+        <img id="player" src="my-phaser-game/assets/images/Knight1.png" alt="Player Image" />
     </div>
 
-    
+    <div id ="menuUI" style="display: none;">
+        <button id="continue-btn">Continue</button>
+        <button id="options-btn">Options</button>
+    </div>
+
+    <!-- put hell thingys here im gonna forget so look out for this note -->
+    <div class="platform" style="left: 100px; top: 400px; width: 200px; height: 20px;"></div>
+    <div class="platform" style="left: 400px; top: 300px; width: 150px; height: 20px;"></div>
+    <div class="platform" style="left: 600px; top: 450px; width: 250px; height: 20px;"></div>
+
     <div id="menu">
-        <img src="my-phaser-game/assets/images/No.png" height = 300px width = 250px>
-        <img src="my-phaser-game/assets/images/Way.png" height = 300px width = 250px>
-        <img src="my-phaser-game/assets/images/Up.png" height = 300px width = 250px>
+        <img src="my-phaser-game/assets/images/No.png" height="300px" width="250px" />
+        <img src="my-phaser-game/assets/images/Way.png" height="300px" width="250px" />
+        <img src="my-phaser-game/assets/images/Up.png" height="300px" width="250px" />
         <div class="nav">
-        <button id="start-btn">Start Game</button>
-        <button id="instructions-btn">Instructions</button>
-        <button id="exit-btn">Exit</button>
+            <button id="start-btn">Start Game</button>
+            <button id="instructions-btn">Instructions</button>
+            <button id="exit-btn">Exit</button>
         </div>
     </div>
 
     <script>
+         const menuUI = document.getElementById("menuUI");
+        const menuButtons = document.querySelectorAll(".menuUI-btn");
+        let menuUIVisible = false;
+        let selectedIndex = 0;
+
+        
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "m") {
+                menuUIVisible = !menuUIVisible;
+                menuUI.style.display = menuUIVisible ? "block" : "none";
+            }
+        });
+
+        
+        function updateMenuUISelection() {
+            menuUIButtons.forEach((btn, index) => {
+                btn.classList.toggle("selected", index === selectedIndex);
+            });
+        }
+
+     
+        document.addEventListener("keydown", (event) => {
+            if (!menuVisible) return;
+
+            if (event.key === "w") {
+                selectedIndex = (selectedIndex - 1 + menuUIButtons.length) % menuUIButtons.length;
+                updateMenuUISelection();
+            } else if (event.key === "s") {
+                selectedIndex = (selectedIndex + 1) % menuUIButtons.length;
+                updateMenuUISelection();
+            } else if (event.key === "Enter") {
+                menuUIButtons[selectedIndex].click();
+            }
+        });
+
         const player = document.getElementById("player");
         const menu = document.getElementById("menu");
 
         let x = 0;
-        let y = 0;
+        let y = 300;
         const movementDistance = 5;
-
+        let gravity = 1;
+        let velocityY = 0;
+        const maxVelocityY = 10;
+        const groundY = 500;
         let keys = {};
 
         const walkRight = [
@@ -58,7 +104,7 @@
             'my-phaser-game/assets/images/KnightLeft8.png'
         ];
 
-        const walkDown = [
+        const crouch = [
             'my-phaser-game/assets/images/KnightDown1.png',
             'my-phaser-game/assets/images/KnightDown2.png',
             'my-phaser-game/assets/images/KnightDown3.png',
@@ -69,7 +115,7 @@
             'my-phaser-game/assets/images/KnightDown8.png'
         ];
 
-        const walkUp = [
+        const jump = [
             'my-phaser-game/assets/images/KnightUp1.png',
             'my-phaser-game/assets/images/KnightUp2.png',
             'my-phaser-game/assets/images/KnightUp3.png',
@@ -80,77 +126,151 @@
             'my-phaser-game/assets/images/KnightUp8.png'
         ];
 
-        let currentDirection = walkDown;
+        let currentDirection = walkRight;
         let frameIndex = 0;
         let animationCooldown = 0;
 
         
-        function movePlayer() {
-            let isMoving = false;
+        const platforms = document.querySelectorAll('.platform');
 
-            if (keys['w']) {
-                y -= movementDistance;
-                currentDirection = walkUp;
-                isMoving = true;
-            }
-            if (keys['a']) {
-                x -= movementDistance;
-                currentDirection = walkLeft;
-                isMoving = true;
-            }
-            if (keys['s']) {
-                y += movementDistance;
-                currentDirection = walkDown;
-                isMoving = true;
-            }
-            if (keys['d']) {
-                x += movementDistance;
-                currentDirection = walkRight;
-                isMoving = true;
-            }
+        function isOnPlatform() {
+    for (let platform of platforms) {
+        const rect = platform.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
 
-            player.style.left = x + "px";
-            player.style.top = y + "px";
+       
+        if (playerRect.bottom <= rect.top + 5 &&
+            playerRect.bottom + velocityY >= rect.top &&
+            playerRect.left < rect.right && 
+            playerRect.right > rect.left) {
+            return { type: 'top', platform: platform }; 
+        }
 
-            window.scrollTo(x - window.innerWidth / 2 + 25, y - window.innerHeight / 2 + 25);
+        
+        if (playerRect.top >= rect.bottom - 5 && 
+            playerRect.top + velocityY <= rect.bottom && 
+            playerRect.left < rect.right && 
+            playerRect.right > rect.left) { 
+            return { type: 'bottom', platform: platform }; 
+        }
 
-            if (isMoving) {
-                if (animationCooldown === 0) {
-                    frameIndex = (frameIndex + 1) % currentDirection.length;
-                    player.src = currentDirection[frameIndex];
-                    animationCooldown = 5; 
-                } else {
-                    animationCooldown--;
-                }
-            } else {
-                player.src = currentDirection[0];
-            }
+        
+        if (playerRect.right >= rect.left && 
+            playerRect.left < rect.left + 5 && 
+            playerRect.bottom > rect.top && 
+            playerRect.top < rect.bottom) { 
+            return { type: 'left', platform: platform }; 
+        }
 
-            requestAnimationFrame(movePlayer);
+       
+        if (playerRect.left <= rect.right && 
+            playerRect.right > rect.right - 5 && 
+            playerRect.bottom > rect.top && 
+            playerRect.top < rect.bottom) { 
+            return { type: 'right', platform: platform }; 
+        }
+    }
+    return null;
+}
+
+function movePlayer() {
+    let isMoving = false;
+
+    
+    if (keys['a']) {
+        x -= movementDistance;
+        currentDirection = walkLeft;
+        isMoving = true;
+    }
+    if (keys['d']) {
+        x += movementDistance;
+        currentDirection = walkRight;
+        isMoving = true;
+    }
+
+    
+    const platformCollision = isOnPlatform();
+
+    if (platformCollision && platformCollision.type === 'top' || y >= groundY) {
+        
+        velocityY = 0; 
+        y = platformCollision ? platformCollision.platform.getBoundingClientRect().top - player.getBoundingClientRect().height : groundY;
+        if (keys['w']) {
+            velocityY = -15; 
+        }
+    } else if (platformCollision && platformCollision.type === 'bottom') {
+        
+        velocityY = 1;
+        y = platformCollision.platform.getBoundingClientRect().bottom + 2; 
+    } else if (platformCollision) {
+        
+        if (platformCollision.type === 'left') {
+            
+            x = platformCollision.platform.getBoundingClientRect().left; 
+        } else if (platformCollision.type === 'right') {
+           
+            x = platformCollision.platform.getBoundingClientRect().right; 
         }
 
       
-        window.onload = function() {
+        if (keys['a'] || keys['d']) {
+            x += keys['d'] ? -movementDistance : movementDistance;
+        }
+    } else {
+        velocityY += gravity; 
+        velocityY = Math.min(velocityY, maxVelocityY); 
+    }
+
+    y += velocityY;
+
+    
+    if (y > groundY) {
+        y = groundY;
+        velocityY = 0;
+    }
+
+    
+    player.style.left = x + "px";
+    player.style.top = y + "px";
+
+    
+    window.scrollTo(x - window.innerWidth / 2 + 25, y - window.innerHeight / 2 + 25);
+
+    
+    if (isMoving) {
+        if (animationCooldown === 0) {
+            frameIndex = (frameIndex + 1) % currentDirection.length;
+            player.src = currentDirection[frameIndex];
+            animationCooldown = 5;
+        } else {
+            animationCooldown--;
+        }
+    } else {
+        player.src = currentDirection[0];
+    }
+
+    requestAnimationFrame(movePlayer);
+}
+
+
+
+         window.onload = function () {
             menu.style.display = 'block';
         };
 
-        
-        document.getElementById("start-btn").onclick = function() {
-            menu.style.display = 'none'; 
-            requestAnimationFrame(movePlayer); 
+        document.getElementById("start-btn").onclick = function () {
+            menu.style.display = 'none';
+            requestAnimationFrame(movePlayer);
         };
 
-       
-        document.getElementById("instructions-btn").onclick = function() {
-            alert("Use W, A, S, D to move the player around.");
+        document.getElementById("instructions-btn").onclick = function () {
+            alert("Use W, A, S, D to move the player. W to jump, A and D to move left and right.");
         };
 
-      
-        document.getElementById("exit-btn").onclick = function() {
-            window.close(); 
+        document.getElementById("exit-btn").onclick = function () {
+            window.close();
         };
 
-        
         document.addEventListener("keydown", (event) => {
             keys[event.key] = true;
         });
@@ -158,6 +278,8 @@
         document.addEventListener("keyup", (event) => {
             keys[event.key] = false;
         });
+
+        
     </script>
 </body>
 
