@@ -13,10 +13,6 @@
         <img id="player" src="my-phaser-game/assets/images/Knight1.png" alt="Player Image" />
     </div>
 
-    <div id ="menuUI" style="display: none;">
-        <button id="continue-btn">Continue</button>
-        <button id="options-btn">Options</button>
-    </div>
 
     <!-- put hell thingys here im gonna forget so look out for this note -->
     <div class="platform" style="left: 100px; top: 400px; width: 200px; height: 20px;"></div>
@@ -35,40 +31,6 @@
     </div>
 
     <script>
-         const menuUI = document.getElementById("menuUI");
-        const menuButtons = document.querySelectorAll(".menuUI-btn");
-        let menuUIVisible = false;
-        let selectedIndex = 0;
-
-        
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "m") {
-                menuUIVisible = !menuUIVisible;
-                menuUI.style.display = menuUIVisible ? "block" : "none";
-            }
-        });
-
-        
-        function updateMenuUISelection() {
-            menuUIButtons.forEach((btn, index) => {
-                btn.classList.toggle("selected", index === selectedIndex);
-            });
-        }
-
-     
-        document.addEventListener("keydown", (event) => {
-            if (!menuUIVisible) return;
-
-            if (event.key === "w") {
-                selectedIndex = (selectedIndex - 1 + menuUIButtons.length) % menuUIButtons.length;
-                updateMenuUISelection();
-            } else if (event.key === "s") {
-                selectedIndex = (selectedIndex + 1) % menuUIButtons.length;
-                updateMenuUISelection();
-            } else if (event.key === "Enter") {
-                menuUIButtons[selectedIndex].click();
-            }
-        });
 
         const player = document.getElementById("player");
         const menu = document.getElementById("menu");
