@@ -57,7 +57,7 @@
 
      
         document.addEventListener("keydown", (event) => {
-            if (!menuVisible) return;
+            if (!menuUIVisible) return;
 
             if (event.key === "w") {
                 selectedIndex = (selectedIndex - 1 + menuUIButtons.length) % menuUIButtons.length;
