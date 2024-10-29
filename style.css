@@ -14,9 +14,9 @@ body, html {
 }
 
 #player {
-    width: 1000px;
-    height: 1000px;
-    position: absolute;
+    width: 31px;
+    height: 33px;
+    position: relative;
 }
 
 
