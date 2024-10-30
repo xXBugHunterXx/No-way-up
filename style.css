@@ -14,10 +14,16 @@ body, html {
 }
 
 #player {
-    width: 31px;
-    height: 33px;
-    position: relative;
+    width: 64px; /* Width of one frame or the character */
+    height: 64px; /* Height of one frame or the character */
+    position: absolute;
+    left: 100px;
+    top: 300px;
+    background-color: transparent;
+    background-image: url('my-phaser-game/assets/images/KnightWalkRight.png'); /* Default sprite sheet */
+    background-repeat: no-repeat;
 }
+
 
 
 
