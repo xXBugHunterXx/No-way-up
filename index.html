@@ -31,9 +31,10 @@
     </div>
 
     <script>
+
         const player = document.getElementById("player");
         const menu = document.getElementById("menu");
-    
+
         let x = 0;
         let y = 300;
         const movementDistance = 5;
@@ -42,74 +43,206 @@
         const maxVelocityY = 10;
         const groundY = 500;
         let keys = {};
-    
-        let currentFrame = 0;
-        const frameWidth = 64; // Width of a single frame
-        const frameHeight = 64; // Height of a single frame
-        const totalFrames = 8; // Total frames in the sprite sheet
+
+        const walkRight = [
+            'my-phaser-game/assets/images/KnightRight1.png',
+            'my-phaser-game/assets/images/KnightRight2.png',
+            'my-phaser-game/assets/images/KnightRight3.png',
+            'my-phaser-game/assets/images/KnightRight4.png',
+            'my-phaser-game/assets/images/KnightRight5.png',
+            'my-phaser-game/assets/images/KnightRight6.png',
+            'my-phaser-game/assets/images/KnightRight7.png',
+            'my-phaser-game/assets/images/KnightRight8.png'
+        ];
+
+        const walkLeft = [
+            'my-phaser-game/assets/images/KnightLeft1.png',
+            'my-phaser-game/assets/images/KnightLeft2.png',
+            'my-phaser-game/assets/images/KnightLeft3.png',
+            'my-phaser-game/assets/images/KnightLeft4.png',
+            'my-phaser-game/assets/images/KnightLeft5.png',
+            'my-phaser-game/assets/images/KnightLeft6.png',
+            'my-phaser-game/assets/images/KnightLeft7.png',
+            'my-phaser-game/assets/images/KnightLeft8.png'
+        ];
+
+        const crouch = [
+            'my-phaser-game/assets/images/KnightDown1.png',
+            'my-phaser-game/assets/images/KnightDown2.png',
+            'my-phaser-game/assets/images/KnightDown3.png',
+            'my-phaser-game/assets/images/KnightDown4.png',
+            'my-phaser-game/assets/images/KnightDown5.png',
+            'my-phaser-game/assets/images/KnightDown6.png',
+            'my-phaser-game/assets/images/KnightDown7.png',
+            'my-phaser-game/assets/images/KnightDown8.png'
+        ];
+
+        const jump = [
+            'my-phaser-game/assets/images/KnightUp1.png',
+            'my-phaser-game/assets/images/KnightUp2.png',
+            'my-phaser-game/assets/images/KnightUp3.png',
+            'my-phaser-game/assets/images/KnightUp4.png',
+            'my-phaser-game/assets/images/KnightUp5.png',
+            'my-phaser-game/assets/images/KnightUp6.png',
+            'my-phaser-game/assets/images/KnightUp7.png',
+            'my-phaser-game/assets/images/KnightUp8.png'
+        ];
+
+        let currentDirection = walkRight;
+        let frameIndex = 0;
         let animationCooldown = 0;
-        let isMoving = false;
-    
-        // Function to update the animation frame
-        function updateAnimation() {
-            if (animationCooldown === 0) {
-                currentFrame = (currentFrame + 1) % totalFrames;
-                player.style.backgroundPosition = `-${currentFrame * frameWidth}px 0`;
-                animationCooldown = 5; // Reset cooldown for smoother animation speed
-            } else {
-                animationCooldown--;
-            }
+
+        
+        const platforms = document.querySelectorAll('.platform');
+
+        function isOnPlatform() {
+    for (let platform of platforms) {
+        const rect = platform.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
+
+       
+        if (playerRect.bottom <= rect.top + 5 &&
+            playerRect.bottom + velocityY >= rect.top &&
+            playerRect.left < rect.right && 
+            playerRect.right > rect.left) {
+            return { type: 'top', platform: platform }; 
         }
+
+        
+        if (playerRect.top >= rect.bottom - 5 && 
+            playerRect.top + velocityY <= rect.bottom && 
+            playerRect.left < rect.right && 
+            playerRect.right > rect.left) { 
+            return { type: 'bottom', platform: platform }; 
+        }
+
+        
+        if (playerRect.right >= rect.left && 
+            playerRect.left < rect.left + 5 && 
+            playerRect.bottom > rect.top && 
+            playerRect.top < rect.bottom) { 
+            return { type: 'left', platform: platform }; 
+        }
+
+       
+        if (playerRect.left <= rect.right && 
+            playerRect.right > rect.right - 5 && 
+            playerRect.bottom > rect.top && 
+            playerRect.top < rect.bottom) { 
+            return { type: 'right', platform: platform }; 
+        }
+    }
+    return null;
+}
+
+function movePlayer() {
+    let isMoving = false;
+
     
-        function movePlayer() {
-            // Movement
-            if (keys['a']) { // Move Left
-                x -= movementDistance;
-                player.style.backgroundImage = "url('my-phaser-game/assets/images/KnightWalkLeft.png')";
-                isMoving = true;
-            } else if (keys['d']) { // Move Right
-                x += movementDistance;
-                player.style.backgroundImage = "url('my-phaser-game/assets/images/KnightWalkRight.png')";
-                isMoving = true;
-            } else {
-                isMoving = false; // Reset movement
-            }
+    if (keys['a']) {
+        x -= movementDistance;
+        currentDirection = walkLeft;
+        isMoving = true;
+    }
+    if (keys['d']) {
+        x += movementDistance;
+        currentDirection = walkRight;
+        isMoving = true;
+    }
+
     
-            // Gravity, collision detection, etc.
+    const platformCollision = isOnPlatform();
+
+    if (platformCollision && platformCollision.type === 'top' || y >= groundY) {
+        
+        velocityY = 0; 
+        y = platformCollision ? platformCollision.platform.getBoundingClientRect().top - player.getBoundingClientRect().height : groundY;
+        if (keys['w']) {
+            velocityY = -15; 
+        }
+    } else if (platformCollision && platformCollision.type === 'bottom') {
+        
+        velocityY = 1;
+        y = platformCollision.platform.getBoundingClientRect().bottom + 2; 
+    } else if (platformCollision) {
+        
+        if (platformCollision.type === 'left') {
             
-            // Update position
-            player.style.left = `${x}px`;
-            player.style.top = `${y}px`;
-    
-            // Only animate if moving
-            if (isMoving) {
-                updateAnimation();
-            } else {
-                currentFrame = 0;
-                player.style.backgroundPosition = "0 0"; // Reset to first frame
-            }
-    
-            requestAnimationFrame(movePlayer);
+            x = platformCollision.platform.getBoundingClientRect().left; 
+        } else if (platformCollision.type === 'right') {
+           
+            x = platformCollision.platform.getBoundingClientRect().right; 
         }
+
+      
+        if (keys['a'] || keys['d']) {
+            x += keys['d'] ? -movementDistance : movementDistance;
+        }
+    } else {
+        velocityY += gravity; 
+        velocityY = Math.min(velocityY, maxVelocityY); 
+    }
+
+    y += velocityY;
+
     
-        window.onload = function () {
+    if (y > groundY) {
+        y = groundY;
+        velocityY = 0;
+    }
+
+    
+    player.style.left = x + "px";
+    player.style.top = y + "px";
+
+    
+    window.scrollTo(x - window.innerWidth / 2 + 25, y - window.innerHeight / 2 + 25);
+
+    
+    if (isMoving) {
+        if (animationCooldown === 0) {
+            frameIndex = (frameIndex + 1) % currentDirection.length;
+            player.src = currentDirection[frameIndex];
+            animationCooldown = 5;
+        } else {
+            animationCooldown--;
+        }
+    } else {
+        player.src = currentDirection[0];
+    }
+
+    requestAnimationFrame(movePlayer);
+}
+
+
+
+         window.onload = function () {
             menu.style.display = 'block';
         };
-    
+
         document.getElementById("start-btn").onclick = function () {
             menu.style.display = 'none';
             requestAnimationFrame(movePlayer);
         };
-    
+
+        document.getElementById("instructions-btn").onclick = function () {
+            alert("Use W, A, S, D to move the player. W to jump, A and D to move left and right.");
+        };
+
+        document.getElementById("exit-btn").onclick = function () {
+            window.close();
+        };
+
         document.addEventListener("keydown", (event) => {
             keys[event.key] = true;
         });
-    
+
         document.addEventListener("keyup", (event) => {
             keys[event.key] = false;
         });
+
+        
     </script>
-    
 </body>
 
 </html>
